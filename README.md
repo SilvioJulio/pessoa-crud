@@ -1,4 +1,4 @@
-## Projeto Spring Boot
+## Projeto Spring Boot Pessoa
 
 Breve descrição do que o projeto faz (ex: API REST para gerenciamento de biblioteca).
 
