@@ -1,4 +1,8 @@
 package com.dbacademia.pessoa.repository;
 
-public class PessoaRepository {
+import com.dbacademia.pessoa.entity.Pessoa;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PessoaRepository extends JpaRepository<Pessoa,Long> {
+    boolean existsBy (String cpf);
 }
