@@ -19,8 +19,8 @@ public class PessoaService {
     private PessoaRepository repository;
 
     public Pessoa criar(Pessoa pessoa) {
-        if(repository.existaByCpf(pessoa.getCpf())){
-            throw new RuntimeException("CPF já cadastradp");
+        if(repository.existsByCpf(pessoa.getCpf())){
+            throw new RuntimeException("Erro: CPF já existente no banco ");
         }
         if(pessoa.getEnderecos() != null){
             pessoa.getEnderecos().forEach((endereco -> endereco.setPessoa(pessoa)));
@@ -32,8 +32,8 @@ public class PessoaService {
     }
 
     public void deletar(Long id){
-        if(!repository.existsBy(id){
-            throw new RuntimeException("ID não exite");
+        if(!repository.existsById(id)){
+            throw new RuntimeException("ID não encontrado");
         }
         repository.deleteById(id);
     }
