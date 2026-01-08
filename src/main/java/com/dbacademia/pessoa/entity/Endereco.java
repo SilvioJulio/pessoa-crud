@@ -17,30 +17,25 @@ public class Endereco {
 
     @NotBlank(message = "Campo rua  é obrigatória")
     @Column(nullable = false)
-    @NonNull
     private String rua;
 
     @NotBlank(message = "O número  é obrigatória")
     @Column(nullable = false)
-    @NonNull
     private Integer numero;
 
     @NotBlank(message = "Cidade é obrigatória")
     @Column(nullable = false)
-    @NonNull
     private String cidade;
 
     @NotBlank(message = "Estado  é obrigatória")
     @Column(nullable = false)
-    @NonNull
     private String estado;
 
     @NotBlank(message = "O campo cep é obrigatória")
-    @Column(nullable = false, unique = true)
-    @NonNull
+    @Column(nullable = false)
     private String cep;
 
-    @ManyToMany
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pessoa_id", nullable = false)
     @JsonBackReference
     private  Pessoa pessoa;

@@ -22,7 +22,6 @@ public class Pessoa {
 
     @NotBlank(message = "O nome é obrigatório")
     @Column(nullable = false)
-    @NonNull
     private String nome;
 
     @NotNull(message = "A data de nascimento é obrigatória")
@@ -31,7 +30,6 @@ public class Pessoa {
 
     @NotBlank(message = "O CPF é obrigatório")
     @Column(nullable = false, unique = true)
-    @NonNull
     private String cpf;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
