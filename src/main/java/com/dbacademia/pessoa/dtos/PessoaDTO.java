@@ -9,7 +9,8 @@ public record PessoaDTO(
         String nome,
         String cpf,
         LocalDate dataNascimento,
-        List<EnderecoDTO> enderecos
+        Integer idade,
+        List<EnderecoDTO> endereco
 
 
 ) {}

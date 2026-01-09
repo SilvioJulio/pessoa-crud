@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Endereco {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,6 +23,10 @@ public class Endereco {
     @NotBlank(message = "O número  é obrigatória")
     @Column(nullable = false)
     private Integer numero;
+
+    @NotBlank(message = "Bairro é obrigatória")
+    @Column(nullable = false)
+    private String bairro;
 
     @NotBlank(message = "Cidade é obrigatória")
     @Column(nullable = false)
@@ -39,4 +44,9 @@ public class Endereco {
     @JoinColumn(name = "pessoa_id", nullable = false)
     @JsonBackReference
     private  Pessoa pessoa;
+
+    @Column(nullable = false)
+    private boolean principal;
+
+
 }

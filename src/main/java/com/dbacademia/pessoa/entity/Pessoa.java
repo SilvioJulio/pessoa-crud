@@ -24,13 +24,17 @@ public class Pessoa {
     @Column(nullable = false)
     private String nome;
 
+    @NotBlank(message = "O CPF é obrigatório")
+    @Column(nullable = false, unique = true)
+    private String cpf;
+
     @NotNull(message = "A data de nascimento é obrigatória")
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 
-    @NotBlank(message = "O CPF é obrigatório")
-    @Column(nullable = false, unique = true)
-    private String cpf;
+    @NotNull(message = "Idade é obrigatória")
+    @Column(nullable = false)
+    private Integer idade;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Endereco> enderecos = new ArrayList<>();

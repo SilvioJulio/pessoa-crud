@@ -1,6 +1,8 @@
 package com.dbacademia.pessoa.dtos;
 
-public record EnderecoDTO (
+import java.util.List;
+
+public record EnderecoDTO(
         Long id,
         String rua,
         Integer numero,
@@ -9,5 +11,5 @@ public record EnderecoDTO (
         String estado,
         String cep,
         boolean principal
-)
-{ }
+) {
+}
