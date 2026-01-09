@@ -3,6 +3,7 @@ package com.dbacademia.pessoa.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -20,7 +21,7 @@ public class Endereco {
     @Column(nullable = false)
     private String rua;
 
-    @NotBlank(message = "O número  é obrigatória")
+    @NotNull(message = "O número  é obrigatória")
     @Column(nullable = false)
     private Integer numero;
 
@@ -42,7 +43,6 @@ public class Endereco {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pessoa_id", nullable = false)
-    @JsonBackReference
     private  Pessoa pessoa;
 
     @Column(nullable = false)

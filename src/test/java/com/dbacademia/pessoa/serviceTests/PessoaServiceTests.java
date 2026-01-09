@@ -10,11 +10,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import java.util.List;
+import java.util.Arrays;
+
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Optional;
+import java.util.ArrayList;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -103,6 +112,107 @@ public class PessoaServiceTests {
         );
 
 
+    }
+
+    @Test
+    void deveListarTodasPessoasEndereco() {
+
+        Pessoa pessoa = new Pessoa();
+        pessoa.setDataNascimento(LocalDate.of(1983, 5, 7));
+
+        pessoa.setId(1l);
+        pessoa.setNome("Luiz Santos");
+        pessoa.setCpf("45612378914");
+        pessoa.setDataNascimento(LocalDate.of(1990, 7, 12));
+        pessoa.setEnderecos(new ArrayList<>());
+
+        List<Pessoa> listaPessoas = List.of(pessoa);
+
+        Page<Pessoa> paginaPessoas = new PageImpl<>(listaPessoas);
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(pessoaRepository.findAll(pageable)).thenReturn(paginaPessoas);
+
+        Page<PessoaDTO> resultado = pessoaService.listarTodos(pageable);
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.getTotalElements());
+        assertEquals("Luiz Santos", resultado.getContent().get(0).nome());
+
+        assertEquals(35, resultado.getContent().get(0).idade());
+
+        verify(pessoaRepository).findAll(pageable);
+
+
+    }
+
+
+    @Test
+    void deveBuscarUmaPessaoPorIdComSucesso() {
+
+        Pessoa pessoaMock = new Pessoa();
+        Long id = 1L;
+        pessoaMock.setId(id);
+        pessoaMock.setNome("Leandro Silva");
+        pessoaMock.setCpf("15975345687");
+
+        when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaMock));
+
+        PessoaDTO resultado = pessoaService.buscarPorId(id);
+
+        assertNotNull(resultado);
+        assertEquals("Leandro Silva", resultado.nome());
+        assertEquals(id, resultado.id());
+
+        verify(pessoaRepository, times(1)).findById(id);
+
+
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoNomeForVazio() {
+        LocalDate dataNascimento = LocalDate.of(2000, 5, 7);
+        Pessoa pessoa = new Pessoa();
+        pessoa.setId(2L);
+        pessoa.setNome("");
+        pessoa.setCpf("78915986318");
+        pessoa.setDataNascimento(dataNascimento);
+
+        when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
+        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
+
+        PessoaDTO resultado = pessoaService.criar(pessoa);
+
+        assertTrue(resultado.nome().isBlank(), "O nome deveria estar vazio");
+
+        assertEquals("", resultado.nome());
+
+
+    }
+
+    @Test
+    void deveDeletarPessoaComSucesso() {
+        Long idExistente = 1L;
+
+        when(pessoaRepository.existsById(idExistente)).thenReturn(true);
+
+        pessoaService.deletarPorId(idExistente);
+
+        verify(pessoaRepository, times(1)).existsById(idExistente);
+        verify(pessoaRepository, times(1)).deleteById(idExistente);
+
+    }
+    @Test
+    void deveLancarExcecaoAoDeletarIdInexistente(){
+
+        Long idInexistente = 60L;
+        when(pessoaRepository.existsById(idInexistente)).thenReturn(false);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            pessoaService.deletarPorId(idInexistente);
+        });
+
+        verify(pessoaRepository, never()).deleteById(anyLong());
     }
 
 
