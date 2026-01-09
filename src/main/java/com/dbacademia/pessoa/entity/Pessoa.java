@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +33,16 @@ public class Pessoa {
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 
-    @NotNull(message = "Idade é obrigatória")
-    @Column(nullable = false)
+    @Transient
     private Integer idade;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Endereco> enderecos = new ArrayList<>();
+
+    public Integer getIdade(){
+        if(this.dataNascimento != null){
+            return Period.between(this.dataNascimento,LocalDate.now()).getYears();
+        }
+        return null;
+    }
 }
