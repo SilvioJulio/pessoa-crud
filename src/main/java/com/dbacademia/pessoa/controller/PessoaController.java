@@ -23,26 +23,26 @@ public class PessoaController {
 
     @PostMapping
     public ResponseEntity<PessoaDTO> criar(@Valid @RequestBody Pessoa pessoa) {
-        Pessoa novaPessoa = service.criar(pessoa);
-        return ResponseEntity.status(HttpStatus.CREATED).body(PessoaMapper.toDTO(novaPessoa));
+        PessoaDTO novaPessoa = service.criar(pessoa);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novaPessoa);
     }
 
     @GetMapping
     public ResponseEntity<Page<PessoaDTO>> listar(Pageable pageable) {
-        Page<PessoaDTO> paginaDTO = service.listarTodos(pageable).map(PessoaMapper::toDTO);
+        Page<PessoaDTO> paginaDTO = service.listarTodos(pageable);
         return ResponseEntity.ok(paginaDTO);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PessoaDTO> buscar(@PathVariable Long id) {
-        Pessoa pessoa = service.buscarPorId(id);
-        return ResponseEntity.ok(PessoaMapper.toDTO(pessoa));
+        PessoaDTO PessoaDTO = service.buscarPorId(id);
+        return ResponseEntity.ok(PessoaDTO);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PessoaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody Pessoa pessoaParaAtualizar) {
-        Pessoa pessoaSalvar = service.atualizar(id, pessoaParaAtualizar);
-        return ResponseEntity.ok(PessoaMapper.toDTO(pessoaSalvar));
+        PessoaDTO pessoaSalvar = service.atualizar(id, pessoaParaAtualizar);
+        return ResponseEntity.ok(pessoaSalvar);
     }
 
     @DeleteMapping("/{id}")

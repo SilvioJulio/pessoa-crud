@@ -1,6 +1,7 @@
 package com.dbacademia.pessoa.serviceTests;
 
 
+import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.repository.PessoaRepository;
 import com.dbacademia.pessoa.service.PessoaService;
@@ -43,10 +44,11 @@ public class PessoaServiceTests {
         when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
         when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
 
-        Pessoa resultado = pessoaService.criar(pessoa);
+        PessoaDTO resultado = pessoaService.criar(pessoa);
 
         assertNotNull(resultado);
-        assertEquals("Julio",resultado.getNome());
+        assertEquals("Julio", resultado.nome());
+        assertEquals(42, resultado.idade());
         verify(pessoaRepository).save(any(Pessoa.class));
 
     }
@@ -64,7 +66,6 @@ public class PessoaServiceTests {
         pessoaExistente.setEnderecos(new ArrayList<>());
 
 
-
         // Preparar objeto da requisição
         LocalDate dataNascimentoNova = LocalDate.of(1987, 12, 11);
 
@@ -74,32 +75,32 @@ public class PessoaServiceTests {
         pessoaAtualizada.setDataNascimento(dataNascimentoNova);
         pessoaAtualizada.setEnderecos(new ArrayList<>());
 
-        // CONFIGURAÇÃO DOS MOCKS
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaExistente));
 
         // CORREÇÃO DO ERRO DE CAST:
         when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoaExistente);
 
 
-        Pessoa resultado = pessoaService.atualizar(id, pessoaAtualizada);
+        PessoaDTO resultado = pessoaService.atualizar(id, pessoaAtualizada);
 
         assertNotNull(resultado);
-        assertEquals("Sandra Gomes", resultado.getNome());
+        assertEquals("Sandra Gomes", resultado.nome());
 
     }
+
     @Test
-    void deveVerificarIdadeVaiSerCalculada(){
-       Pessoa pessoa = new Pessoa();
-       pessoa.setDataNascimento(LocalDate.of(1983,5,7));
+    void deveVerificarIdadeVaiSerCalculada() {
+        Pessoa pessoa = new Pessoa();
+        pessoa.setDataNascimento(LocalDate.of(1983, 5, 7));
 
-       Integer idadeCalculada = pessoa.getIdade();
+        Integer idadeCalculada = pessoa.getIdade();
 
-       assertNotNull(idadeCalculada,"Deve ser calculada a idade automaticamente");
-       assertEquals(42, idadeCalculada, "Idade calculada está inválida para início de 2026 ");
+        assertNotNull(idadeCalculada, "Deve ser calculada a idade automaticamente");
+        assertEquals(42, idadeCalculada, "Idade calculada está inválida para início de 2026 ");
 
-       assertTrue(pessoa.getDataNascimento().isBefore(LocalDate.now()),
-               "A data de nascimento deve ser anterior à data atual"
-       );
+        assertTrue(pessoa.getDataNascimento().isBefore(LocalDate.now()),
+                "A data de nascimento deve ser anterior à data atual"
+        );
 
 
     }

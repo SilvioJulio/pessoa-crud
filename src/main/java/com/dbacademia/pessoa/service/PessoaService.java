@@ -1,6 +1,8 @@
 package com.dbacademia.pessoa.service;
 
+import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
+import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.repository.PessoaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +18,19 @@ public class PessoaService {
     @Autowired
     private PessoaRepository repository;
 
-    public Pessoa criar(Pessoa pessoa) {
+    public PessoaDTO criar(Pessoa pessoa) {
         if (repository.existsByCpf(pessoa.getCpf())) {
             throw new RuntimeException("Erro: CPF já existente no banco ");
         }
-        if (pessoa.getEnderecos() != null) {
-            pessoa.getEnderecos().forEach((endereco -> endereco.setPessoa(pessoa)));
-        }
-        return repository.save(pessoa);
+
+        vincularEnderecos(pessoa);
+        Pessoa salva = repository.save(pessoa);
+
+        return PessoaMapper.toDTO(salva);
     }
 
-    public Pessoa atualizar(Long id, Pessoa pessoaAtualizada) {
+
+    public PessoaDTO atualizar(Long id, Pessoa pessoaAtualizada) {
         Pessoa pessoaExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pessoa não foi localizada com o ID: " + id));
 
@@ -48,17 +52,25 @@ public class PessoaService {
                 pessoaExistente.getEnderecos().add(novoEndereco);
             });
         }
-        return repository.save(pessoaExistente);
+        return PessoaMapper.toDTO(repository.save(pessoaExistente));
     }
 
-    public Page<Pessoa> listarTodos(Pageable pageable) {
-        return repository.findAll(pageable);
+    public Page<PessoaDTO> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable).map(PessoaMapper::toDTO);
     }
 
-    public Pessoa buscarPorId(Long id) {
-        return repository.findById(id)
+    public PessoaDTO buscarPorId(Long id) {
+        Pessoa pesso = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pessoa com ID" + id + "não foi encontrado"));
+        return PessoaMapper.toDTO(pesso);
     }
+
+    private void vincularEnderecos(Pessoa pessoa) {
+        if (pessoa.getEnderecos() != null) {
+            pessoa.getEnderecos().forEach(endereco -> endereco.setPessoa(pessoa));
+        }
+    }
+
 
     public void deletarPorId(Long id) {
         if (!repository.existsById(id)) {
