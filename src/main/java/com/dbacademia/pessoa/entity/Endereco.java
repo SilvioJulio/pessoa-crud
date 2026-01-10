@@ -1,13 +1,12 @@
 package com.dbacademia.pessoa.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table (name = "Endereco")
+@Table (name = "endereco")
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,7 +16,7 @@ public class Endereco {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Campo rua  é obrigatória")
+    @NotBlank(message = "rua é obrigatória")
     @Column(nullable = false)
     private String rua;
 

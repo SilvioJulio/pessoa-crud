@@ -14,3 +14,17 @@
           show-sql: true
           database-platform: org.hibernate.dialect.H2Dialect
 
+          springdoc:
+            swagger-ui:
+              # Caminho para acessar a interface visual
+              path: /swagger-ui.html
+              # Ordena os endpoints por método (GET, POST, etc)
+              operations-sorter: method
+              # Mantém as seções de tags expandidas por padrão
+              doc-expansion: list
+            api-docs:
+              # Caminho para o JSON bruto da especificação
+              path: /api-docs
+            show-actuator: true # Opcional: mostra os endpoints do Actuator no Swagger
+
+

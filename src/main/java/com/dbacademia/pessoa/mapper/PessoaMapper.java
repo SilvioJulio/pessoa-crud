@@ -1,3 +1,4 @@
+
 package com.dbacademia.pessoa.mapper;
 
 import com.dbacademia.pessoa.dtos.EnderecoDTO;
@@ -6,24 +7,32 @@ import com.dbacademia.pessoa.entity.Endereco;
 import com.dbacademia.pessoa.entity.Pessoa;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PessoaMapper {
+
     public static PessoaDTO toDTO(Pessoa pessoa) {
-        List<EnderecoDTO> enderecoDTO = pessoa.getEnderecos().stream()
+        if (pessoa == null) return null;
+
+        List<Endereco> enderecos = Objects.requireNonNullElse(pessoa.getEnderecos(), List.of());
+
+        List<EnderecoDTO> enderecoDTOs = enderecos.stream()
                 .map(PessoaMapper::toEnderecoDTO)
                 .toList();
+
         return new PessoaDTO(
                 pessoa.getId(),
                 pessoa.getNome(),
                 pessoa.getCpf(),
-                pessoa.getDataNascimento(),
+                pessoa.getDataNascimento(), // LocalDate; Jackson formata via @JsonFormat
                 pessoa.getIdade(),
-                enderecoDTO
-
+                enderecoDTOs
         );
     }
 
     public static EnderecoDTO toEnderecoDTO(Endereco endereco) {
+        if (endereco == null) return null;
+
         return new EnderecoDTO(
                 endereco.getId(),
                 endereco.getRua(),
@@ -32,9 +41,8 @@ public class PessoaMapper {
                 endereco.getCidade(),
                 endereco.getEstado(),
                 endereco.getCep(),
-                endereco.isPrincipal()
+                endereco.isPrincipal() // boolean -> isPrincipal()
         );
-
     }
 }
 

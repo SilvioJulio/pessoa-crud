@@ -3,9 +3,9 @@ package com.dbacademia.pessoa.controller;
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
-import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.service.PessoaService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +28,7 @@ public class PessoaController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<PessoaDTO>> listar(Pageable pageable) {
+    public ResponseEntity<Page<PessoaDTO>> listar(@ParameterObject Pageable pageable) {
         Page<PessoaDTO> paginaDTO = service.listarTodos(pageable);
         return ResponseEntity.ok(paginaDTO);
     }
