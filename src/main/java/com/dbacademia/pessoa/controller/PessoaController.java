@@ -4,6 +4,7 @@ package com.dbacademia.pessoa.controller;
 import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.service.PessoaService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/pessoas")
+@RequestMapping(value = "/pessoas", produces = "application/json") // Adicionado produces
 public class PessoaController {
 
     @Autowired
@@ -28,6 +29,7 @@ public class PessoaController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar pessoas")
     public ResponseEntity<Page<PessoaDTO>> listar(@ParameterObject Pageable pageable) {
         Page<PessoaDTO> paginaDTO = service.listarTodos(pageable);
         return ResponseEntity.ok(paginaDTO);
@@ -35,9 +37,10 @@ public class PessoaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PessoaDTO> buscar(@PathVariable Long id) {
-        PessoaDTO PessoaDTO = service.buscarPorId(id);
-        return ResponseEntity.ok(PessoaDTO);
+        PessoaDTO dto = service.buscarPorId(id); // Alterado de PessoaDTO para dto
+        return ResponseEntity.ok(dto);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<PessoaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody Pessoa pessoaParaAtualizar) {
