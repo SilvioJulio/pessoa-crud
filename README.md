@@ -1,4 +1,4 @@
-## 🚀 API de Gerenciamento de Pessoas - DB Academia
+##  API de Gerenciamento de Pessoas - DB Academia
 
 Esta é uma API REST desenvolvida para o gerenciamento de pessoas e seus respectivos endereços. O projeto segue as melhores práticas de arquitetura e segurança exigidas em **2026**, com foco em testes automatizados e integridade de dados.
 
@@ -12,7 +12,7 @@ Esta é uma API REST desenvolvida para o gerenciamento de pessoas e seus respect
 *   **SpringDoc OpenAPI** (Swagger UI)
 *   **JUnit 5 & Mockito** (Testes Unitários e Integração)
 
-## 📋 Diferenciais do Projeto
+##  Diferenciais do Projeto
 
 ### 1. Segurança e Estabilidade
 O projeto foi atualizado para a versão mais recente do Spring Boot em 2026, corrigindo vulnerabilidades de exposição de endpoints e garantindo conformidade com a **CVE-2025-22235**.
@@ -26,7 +26,7 @@ Utilizamos o padrão **DTO (Data Transfer Object)** para isolar as entidades do 
 ### 4. Paginação Profissional
 A API utiliza o modo de serialização `VIA_DTO`, garantindo que o retorno das listas paginadas no Swagger e Postman seja limpo, estável e contenha informações de navegação (`totalPages`, `totalElements`, etc).
 
-## 📖 Documentação da API (Swagger)
+## Documentação da API (Swagger)
 
 A documentação interativa pode ser acessada através da URL:
 🔗 [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
@@ -39,7 +39,7 @@ A documentação interativa pode ser acessada através da URL:
 *   `PUT /pessoas/{id}`: Atualização completa dos dados.
 *   `DELETE /pessoas/{id}`: Remove a pessoa e seus endereços (Cascade).
 
-## 🧪 Suíte de Testes
+##  Suíte de Testes
 
 O projeto possui dois níveis de testes automatizados:
 
