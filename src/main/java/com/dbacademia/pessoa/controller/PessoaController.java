@@ -3,6 +3,7 @@ package com.dbacademia.pessoa.controller;
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
+import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.service.PessoaService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -23,7 +24,8 @@ public class PessoaController {
     private PessoaService service;
 
     @PostMapping
-    public ResponseEntity<PessoaDTO> criar(@Valid @RequestBody Pessoa pessoa) {
+    public ResponseEntity<PessoaDTO> criar(@Valid @RequestBody PessoaDTO pessoaDTO) {
+        Pessoa pessoa = PessoaMapper.toEntity(pessoaDTO);
         PessoaDTO novaPessoa = service.criar(pessoa);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaPessoa);
     }

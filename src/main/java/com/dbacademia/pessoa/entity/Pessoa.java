@@ -1,6 +1,7 @@
 
 package com.dbacademia.pessoa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -41,6 +42,7 @@ public class Pessoa {
     private Integer idade;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<Endereco> enderecos = new ArrayList<>();
 
 

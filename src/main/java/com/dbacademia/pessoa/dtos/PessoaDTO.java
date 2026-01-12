@@ -13,7 +13,7 @@ public record PessoaDTO(
         @JsonFormat(pattern = "dd/MM/yyyy") // Define o formato  Brasil
         LocalDate dataNascimento,
         Integer idade,
-        List<EnderecoDTO> endereco
+        List<EnderecoDTO> enderecos
 
 
 ) {}

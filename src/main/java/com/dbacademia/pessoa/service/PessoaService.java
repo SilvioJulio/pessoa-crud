@@ -1,6 +1,7 @@
 package com.dbacademia.pessoa.service;
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
+import com.dbacademia.pessoa.entity.Endereco;
 import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.repository.PessoaRepository;
@@ -30,7 +31,7 @@ public class PessoaService {
         return PessoaMapper.toDTO(salva);
     }
 
-
+    @Transactional
     public PessoaDTO atualizar(Long id, Pessoa pessoaAtualizada) {
         Pessoa pessoaExistente = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não foi localizada com o ID: " + id));
@@ -38,6 +39,8 @@ public class PessoaService {
         pessoaExistente.setNome(pessoaAtualizada.getNome());
         pessoaExistente.setDataNascimento(pessoaAtualizada.getDataNascimento());
 
+
+        // Verifica se o CPF foi alterado
         if (!pessoaExistente.getCpf().equals(pessoaAtualizada.getCpf())) {
             if (repository.existsByCpf(pessoaAtualizada.getCpf())) {
                throw new  ResponseStatusException(HttpStatus.BAD_REQUEST,  "O CPF já está cadastrado no sistema");
@@ -45,14 +48,14 @@ public class PessoaService {
             pessoaExistente.setCpf(pessoaAtualizada.getCpf());
 
         }
-        if (pessoaAtualizada.getEnderecos() != null) {
-            pessoaExistente.getEnderecos().clear();
-            pessoaAtualizada.getEnderecos().forEach(novoEndereco -> {
-                novoEndereco.setPessoa(pessoaExistente);
-                pessoaExistente.getEnderecos().add(novoEndereco);
-            });
-        }
-        return PessoaMapper.toDTO(repository.save(pessoaExistente));
+          pessoaExistente.getEnderecos().clear();
+          pessoaAtualizada.getEnderecos().forEach(endereco -> {
+              endereco.setPessoa(pessoaExistente);
+              pessoaExistente.getEnderecos().add(endereco);
+          });
+
+        Pessoa salva = repository.saveAndFlush(pessoaExistente);
+        return PessoaMapper.toDTO(salva);
     }
 
     public Page<PessoaDTO> listarTodos(Pageable pageable) {

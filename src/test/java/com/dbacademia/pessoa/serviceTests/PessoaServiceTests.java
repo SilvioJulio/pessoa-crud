@@ -64,21 +64,33 @@ public class PessoaServiceTests {
     }
 
     @Test
-    @DisplayName("Deve atualizar os dados e endereços de uma pessoa com sucesso")
     void deveAtualizarUmaPessoaEnderecoTest() {
         Long id = 1L;
-        pessoaMock.setId(id);
+        Pessoa pessoaBD = PessoaCreator.createPessoaEntity();
+        pessoaBD.setId(id);
+
+
         Pessoa registrosNovos = PessoaCreator.createPessoaEntity();
+        registrosNovos.setNome("Nome Atualizado");
 
-        when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaMock));
-        // CORREÇÃO DO ERRO DE CAST:
-        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoaMock);
+        when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaBD));
+        when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
 
+
+        when(pessoaRepository.saveAndFlush(any(Pessoa.class))).thenAnswer(invocation -> {
+            Pessoa pessoa = invocation.getArgument(0);
+            return pessoa;
+        });
 
         PessoaDTO resultado = pessoaService.atualizar(id, registrosNovos);
 
         assertNotNull(resultado);
-        assertEquals(registrosNovos.getNome(), resultado.nome());
+        assertEquals("Nome Atualizado", resultado.nome());
+
+        assertNotNull( resultado.enderecos());
+        assertFalse(resultado.enderecos().isEmpty());
+
+        verify(pessoaRepository).saveAndFlush(any(Pessoa.class));
 
     }
 

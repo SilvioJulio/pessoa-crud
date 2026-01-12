@@ -37,8 +37,7 @@ public class PessoaControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // CORREÇÃO: Mockar o Service, não o Controller.
-    // Usando @MockitoBean (padrão Spring Boot 3.4+)
+
     @MockitoBean
     private PessoaService service;
 
