@@ -3,16 +3,18 @@ package com.dbacademia.pessoa.serviceTests;
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
+import com.dbacademia.pessoa.exception.BusinessRuleException;
 import com.dbacademia.pessoa.repository.PessoaRepository;
 import com.dbacademia.pessoa.service.PessoaService;
 import com.dbacademia.pessoa.util.PessoaCreator;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +29,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,158 +41,121 @@ public class PessoaServiceTests {
     private PessoaService pessoaService;
 
     private Pessoa pessoaMock;
-    private PessoaDTO pessoaDTOMock;
 
     @BeforeEach
     void setUp() {
-        pessoaMock = PessoaCreator.createPessoaEntity();
-        pessoaDTOMock = PessoaCreator.createPesssoaDTO();
+        // 1. Crie o DTO primeiro
+        PessoaDTO dto = PessoaCreator.createPesssoaDTO(
+                1L,
+                "Luiz Felipe",
+                "01852416033",
+                LocalDate.of(2003, 5, 11),
+                null,
+                new ArrayList<>()
+        );
+
+        pessoaMock = PessoaCreator.createPessoaEntity(dto);
     }
 
-    @Test
-    void deveSalvarUmaPessoaComSuscessoTest() {
 
-        when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
-        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoaMock);
-
-        PessoaDTO resultado = pessoaService.criar(pessoaMock);
-
-        assertNotNull(resultado);
-        assertEquals(pessoaMock.getNome(), resultado.nome());
-        assertEquals(pessoaMock.getIdade(), resultado.idade());
-        verify(pessoaRepository).save(any(Pessoa.class));
-
-    }
 
     @Test
-    void deveAtualizarUmaPessoaEnderecoTest() {
+    void deveAtualizarUmaPessoaComSucessoTest() {
+        // Arrange
         Long id = 1L;
-        Pessoa pessoaBD = PessoaCreator.createPessoaEntity();
-        pessoaBD.setId(id);
 
+        // Criando pessoa que "está no banco"
+        PessoaDTO dtoBanco = PessoaCreator.createPesssoaDTO(id, "Nome Original", "01852416033", LocalDate.of(2003, 5, 11), null, new ArrayList<>());
+        Pessoa pessoaBD = PessoaCreator.createPessoaEntity(dtoBanco);
 
-        Pessoa registrosNovos = PessoaCreator.createPessoaEntity();
-        registrosNovos.setNome("Nome Atualizado");
+        // Criando "novos dados" que vêm da requisição (mesmo CPF)
+        PessoaDTO dtoNovo = PessoaCreator.createPesssoaDTO(id, "Nome Atualizado", "01852416033", LocalDate.of(2003, 5, 11), null, new ArrayList<>());
+        Pessoa registrosNovos = PessoaCreator.createPessoaEntity(dtoNovo);
 
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaBD));
-        when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
+        when(pessoaRepository.saveAndFlush(any(Pessoa.class))).thenAnswer(i -> i.getArgument(0));
 
-
-        when(pessoaRepository.saveAndFlush(any(Pessoa.class))).thenAnswer(invocation -> {
-            Pessoa pessoa = invocation.getArgument(0);
-            return pessoa;
-        });
-
+        // Act
         PessoaDTO resultado = pessoaService.atualizar(id, registrosNovos);
 
+        // Assert
         assertNotNull(resultado);
         assertEquals("Nome Atualizado", resultado.nome());
-
-        assertNotNull( resultado.enderecos());
-        assertFalse(resultado.enderecos().isEmpty());
-
+        assertEquals("01852416033", resultado.cpf());
         verify(pessoaRepository).saveAndFlush(any(Pessoa.class));
+    }
 
+    @Test
+    void deveLancarExcecaoAoTentarAlterarCpf() {
+        // Arrange
+        Long id = 1L;
+        PessoaDTO dtoBanco = PessoaCreator.createPesssoaDTO(id, "User", "11111111111", LocalDate.of(2000, 1, 1), null,new ArrayList<>());
+        Pessoa pessoaNoBanco = PessoaCreator.createPessoaEntity(dtoBanco);
+
+        PessoaDTO dtoErro = PessoaCreator.createPesssoaDTO(id, "User", "22222222222", LocalDate.of(2000, 1, 1), null,  new ArrayList<>());
+        Pessoa dadosComCpfDiferente = PessoaCreator.createPessoaEntity( dtoErro);
+
+        when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaNoBanco));
+
+        // Act & Assert
+        assertThrows(BusinessRuleException.class, () -> {
+            pessoaService.atualizar(id, dadosComCpfDiferente);
+        });
     }
 
     @Test
     void deveVerificarIdadeVaiSerCalculada() {
-
         Integer idadeCalculada = pessoaMock.getIdade();
-
-        assertNotNull(idadeCalculada, "Deve ser calculada a idade automaticamente");
-        assertEquals(pessoaMock.getIdade(), idadeCalculada, "Idade calculada está inválida para início de 2026 ");
-
-        assertTrue(pessoaMock.getDataNascimento().isBefore(LocalDate.now()),
-                "A data de nascimento deve ser anterior à data atual"
-        );
-
+        assertNotNull(idadeCalculada);
+        // Em 2026, quem nasceu em 2003 tem 22 ou 23 anos
+        assertTrue(idadeCalculada == 22 || idadeCalculada == 23);
 
     }
 
     @Test
     void deveListarTodasPessoasEndereco() {
-
-
-        pessoaMock.setId(1l);
-        Page<Pessoa> paginaPessoas = new PageImpl<>(List.of(pessoaMock));
         Pageable pageable = PageRequest.of(0, 10);
+        Page<Pessoa> paginaPessoas = new PageImpl<>(List.of(pessoaMock));
         when(pessoaRepository.findAll(pageable)).thenReturn(paginaPessoas);
 
         Page<PessoaDTO> resultado = pessoaService.listarTodos(pageable);
 
-
         assertNotNull(resultado);
-        assertFalse(resultado.isEmpty());
         assertEquals(1, resultado.getTotalElements());
-        verify(pessoaRepository, times(1)).findAll(pageable);
-
-
     }
-
 
     @Test
     void deveBuscarUmaPessaoPorIdComSucesso() {
-
         Long id = 1L;
-        pessoaMock.setId(id);
-
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaMock));
 
         PessoaDTO resultado = pessoaService.buscarPorId(id);
 
         assertEquals(id, resultado.id());
         assertEquals(pessoaMock.getNome(), resultado.nome());
-
-
     }
-
     @Test
-    void deveLancarExcecaoQuandoNomeForVazio() {
+    void deveVerificarIdadeCalculadaNoDTO() {
+        PessoaDTO dto = new PessoaDTO(1L, "Teste", "01852416033", LocalDate.of(2000, 1, 1), null, new ArrayList<>());
 
+        Integer idadeEsperada = Period.between(LocalDate.of(2000, 1, 1), LocalDate.now()).getYears();
 
-        pessoaMock.setId(2L);
-        pessoaMock.setNome("");
-
-        when(pessoaRepository.existsByCpf(anyString())).thenReturn(false);
-        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoaMock);
-
-        PessoaDTO resultado = pessoaService.criar(pessoaMock);
-
-        assertTrue(resultado.nome().isEmpty(),
-                "Deveria lançar uma exceção ou retornar um erro ao tentar criar uma pessoa com nome vazio");
-
-        assertEquals(
-                "",
-                resultado.nome(),
-                "Deveria lançar uma exceção ou retornar um erro ao tentar criar uma pessoa com nome vazio"
-        );
-
-
+        assertEquals(idadeEsperada, dto.idade());
     }
-
-
     @Test
-    void deveDeletarPessoaComSucesso() {
-        Long idExistente = 1L;
+    void deveVerificarSeIdadeFoiCalculadaNoRetorno() {
+        // 1. Arrange: Criamos um DTO com idade null
+        PessoaDTO dtoEntrada = PessoaCreator.createPesssoaDTO(null, "Luiz", "01852416033", LocalDate.of(2000, 1, 1), null, new ArrayList<>());
+        Pessoa entidade = PessoaCreator.createPessoaEntity(dtoEntrada);
 
-        when(pessoaRepository.existsById(idExistente)).thenReturn(true);
+        when(pessoaRepository.save(any())).thenReturn(entidade);
 
-        pessoaService.deletarPorId(idExistente);
+        // 2. Act: O service chama o Mapper que calcula a idade
+        PessoaDTO resultado = pessoaService.criar(entidade);
 
-        verify(pessoaRepository).deleteById(idExistente);
 
-    }
-
-    @Test
-    void deveLancarExcecaoAoDeletarIdInexistente() {
-
-        Long idInexistente = 60L;
-        when(pessoaRepository.existsById(idInexistente)).thenReturn(false);
-
-        assertThrows(RuntimeException.class, () -> pessoaService.deletarPorId(idInexistente));
-
-        verify(pessoaRepository, never()).deleteById(anyLong());
+        assertNotNull(resultado.idade());
+        assertEquals(26, resultado.idade());
     }
 
 

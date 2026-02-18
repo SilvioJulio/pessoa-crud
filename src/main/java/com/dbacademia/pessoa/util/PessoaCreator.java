@@ -1,50 +1,51 @@
 package com.dbacademia.pessoa.util;
 
+import com.dbacademia.pessoa.dtos.EnderecoDTO;
 import com.dbacademia.pessoa.dtos.PessoaDTO;
 import com.dbacademia.pessoa.entity.Endereco;
 import com.dbacademia.pessoa.entity.Pessoa;
-import net.datafaker.Faker;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class PessoaCreator {
-    private static final Faker faker = new Faker(new Locale("pt-BR"));
 
-    public static PessoaDTO createPesssoaDTO() {
+    public static PessoaDTO createPesssoaDTO(Long id, String nome, String cpf, LocalDate dataNasc, Integer idade, List<EnderecoDTO> enderecos) {
         return new PessoaDTO(
-                null,
-                faker.name().fullName(),
-                faker.number().digits(11),
-                LocalDate.now().minusYears(faker.number().numberBetween(18, 60)),
-                35,
-                new ArrayList<>()
+                id,
+                nome,
+                cpf,
+                dataNasc,
+                idade,
+                enderecos != null ? enderecos : new ArrayList<>()
         );
-
     }
 
-    public static Pessoa createPessoaEntity() {
+    // ADICIONE O PARÂMETRO (PessoaDTO dto) AQUI ABAIXO:
+    public static Pessoa createPessoaEntity(PessoaDTO dto) {
         Pessoa pessoa = new Pessoa();
-        pessoa.setNome(faker.name().fullName());
-        pessoa.setCpf(faker.number().digits(11));
-        pessoa.setDataNascimento(LocalDate.now().minusYears(25));
+        pessoa.setId(dto.id());
+        pessoa.setNome(dto.nome());
+        pessoa.setCpf(dto.cpf());
+        pessoa.setDataNascimento(dto.dataNascimento());
 
-        List<Endereco> enderecos = new ArrayList<>();
-
-        Endereco endereco = new Endereco();
-        endereco.setRua(faker.address().streetName());
-        endereco.setNumero(Integer.parseInt(faker.address().streetAddressNumber()));
-        endereco.setBairro(faker.address().secondaryAddress()); // ou outro campo de bairro
-        endereco.setCidade(faker.address().city());
-        endereco.setEstado(faker.address().stateAbbr());
-        endereco.setCep(faker.address().zipCode());
-        endereco.setPrincipal(true);
-        endereco.setPessoa(pessoa); // Vínculo importante para o JPA
-
-        enderecos.add(endereco);
-        pessoa.setEnderecos(enderecos);
+        if (dto.enderecos() != null) {
+            List<Endereco> enderecos = dto.enderecos().stream().map(e -> {
+                Endereco end = new Endereco();
+                end.setId(e.id());
+                end.setRua(e.rua());
+                end.setNumero(e.numero());
+                end.setBairro(e.bairro());
+                end.setCidade(e.cidade());
+                end.setEstado(e.estado());
+                end.setCep(e.cep());
+                end.setPrincipal(e.principal());
+                end.setPessoa(pessoa);
+                return end;
+            }).toList();
+            pessoa.setEnderecos(new ArrayList<>(enderecos));
+        }
 
         return pessoa;
     }

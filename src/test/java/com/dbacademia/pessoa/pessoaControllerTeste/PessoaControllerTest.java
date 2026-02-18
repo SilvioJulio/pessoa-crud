@@ -48,7 +48,7 @@ public class PessoaControllerTest {
     void setUp() {
         dataNasc = LocalDate.of(1990, 5, 7);
         // Em 2026, quem nasceu em 07/05/1990 tem 35 anos
-        pessoaDTO = new PessoaDTO(1L, "Julio Santos", "12345678901", dataNasc, 35, new ArrayList<>());
+        pessoaDTO = new PessoaDTO(1L, "Julio Santos", "12345678901", dataNasc, null, new ArrayList<>());
     }
 
     @Test

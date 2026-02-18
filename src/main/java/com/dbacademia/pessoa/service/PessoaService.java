@@ -1,17 +1,20 @@
 package com.dbacademia.pessoa.service;
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
-import com.dbacademia.pessoa.entity.Endereco;
 import com.dbacademia.pessoa.entity.Pessoa;
+import com.dbacademia.pessoa.exception.BusinessRuleException;
 import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.repository.PessoaRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
+
 
 
 @Service
@@ -21,9 +24,11 @@ public class PessoaService {
     @Autowired
     private PessoaRepository repository;
 
+
     public PessoaDTO criar(Pessoa pessoa) {
+        // CPF deve chegar em 11 dígitos (sem máscara). A Entity já valida.
         if (repository.existsByCpf(pessoa.getCpf())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Erro: CPF já existente no banco ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro: CPF já existente no banco");
         }
 
         vincularEnderecos(pessoa);
@@ -31,53 +36,61 @@ public class PessoaService {
         return PessoaMapper.toDTO(salva);
     }
 
-    @Transactional
     public PessoaDTO atualizar(Long id, Pessoa pessoaAtualizada) {
         Pessoa pessoaExistente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não foi localizada com o ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pessoa não foi localizada"));
 
-        pessoaExistente.setNome(pessoaAtualizada.getNome());
-        pessoaExistente.setDataNascimento(pessoaAtualizada.getDataNascimento());
+        // 1. Pega os valores e remove tudo que não for número
+        String cpfEnviado = pessoaAtualizada.getCpf() != null
+                ? pessoaAtualizada.getCpf().replaceAll("\\D", "")
+                : null;
+
+        String cpfNoBanco = pessoaExistente.getCpf().replaceAll("\\D", "");
+
+        System.out.println("Enviado: '" + cpfEnviado + "'");
+        System.out.println("No Banco: '" + cpfNoBanco + "'");
 
 
-        // Verifica se o CPF foi alterado
-        if (!pessoaExistente.getCpf().equals(pessoaAtualizada.getCpf())) {
-            if (repository.existsByCpf(pessoaAtualizada.getCpf())) {
-               throw new  ResponseStatusException(HttpStatus.BAD_REQUEST,  "O CPF já está cadastrado no sistema");
-            }
-            pessoaExistente.setCpf(pessoaAtualizada.getCpf());
-
+        // 2. Compara apenas se o CPF foi enviado
+        if (cpfEnviado != null && !cpfEnviado.equals(cpfNoBanco)) {
+            throw new BusinessRuleException("Não é permitido alterar o CPF de uma pessoa cadastrada", "cpf");
         }
-          pessoaExistente.getEnderecos().clear();
-          pessoaAtualizada.getEnderecos().forEach(endereco -> {
-              endereco.setPessoa(pessoaExistente);
-              pessoaExistente.getEnderecos().add(endereco);
-          });
+
+        // 3. Garante que o CPF da entidade persistida NUNCA mude,
+        // mesmo que o Mapper tente sobrescrever
+        pessoaAtualizada.setCpf(pessoaExistente.getCpf());
+
+        PessoaMapper.copyUpdatableFields(PessoaMapper.toDTO(pessoaAtualizada), pessoaExistente);
 
         Pessoa salva = repository.saveAndFlush(pessoaExistente);
         return PessoaMapper.toDTO(salva);
     }
+
+
+
 
     public Page<PessoaDTO> listarTodos(Pageable pageable) {
         return repository.findAll(pageable).map(PessoaMapper::toDTO);
     }
 
     public PessoaDTO buscarPorId(Long id) {
-        Pessoa pesso = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa com ID" + id + "não foi encontrado"));
-        return PessoaMapper.toDTO(pesso);
+        Pessoa pessoa = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pessoa com ID " + id + " não foi encontrada"));
+        return PessoaMapper.toDTO(pessoa);
+    }
+
+    public void deletarPorId(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID não encontrado");
+        }
+        repository.deleteById(id);
     }
 
     private void vincularEnderecos(Pessoa pessoa) {
         if (pessoa.getEnderecos() != null) {
             pessoa.getEnderecos().forEach(endereco -> endereco.setPessoa(pessoa));
         }
-    }
-
-    public void deletarPorId(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,  "ID não encontrado");
-        }
-        repository.deleteById(id);
     }
 }

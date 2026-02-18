@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pessoa")
+@Table(name = "tb_pessoa")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,9 +37,6 @@ public class Pessoa {
     @JsonFormat(pattern = "dd/MM/yyyy") // padronize com barra
     private LocalDate dataNascimento;
 
-    @Transient
-    @Setter(AccessLevel.NONE)
-    private Integer idade;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

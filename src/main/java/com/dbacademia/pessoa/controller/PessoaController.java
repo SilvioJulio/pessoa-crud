@@ -2,17 +2,16 @@ package com.dbacademia.pessoa.controller;
 
 
 import com.dbacademia.pessoa.dtos.PessoaDTO;
-import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.service.PessoaService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -24,11 +23,21 @@ public class PessoaController {
     private PessoaService service;
 
     @PostMapping
-    public ResponseEntity<PessoaDTO> criar(@Valid @RequestBody PessoaDTO pessoaDTO) {
-        Pessoa pessoa = PessoaMapper.toEntity(pessoaDTO);
-        PessoaDTO novaPessoa = service.criar(pessoa);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaPessoa);
+    public ResponseEntity<PessoaDTO> criar(@Validated(PessoaDTO.OnCreate.class) @RequestBody PessoaDTO dto) {
+        var entity = PessoaMapper.toEntity(dto); // aqui CPF é aceito
+        var resp = service.criar(entity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PessoaDTO> atualizar(
+            @PathVariable Long id,
+            @Validated(PessoaDTO.OnUpdate.class) @RequestBody PessoaDTO dto ) {
+        var entity = PessoaMapper.toEntity(dto); // aqui CPF é aceito
+        var resp = service.atualizar(id, entity);
+        return ResponseEntity.ok(resp);
+    }
+
 
     @GetMapping
     @Operation(summary = "Listar pessoas")
@@ -42,14 +51,7 @@ public class PessoaController {
         PessoaDTO dto = service.buscarPorId(id); // Alterado de PessoaDTO para dto
         return ResponseEntity.ok(dto);
     }
-
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PessoaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody Pessoa pessoaParaAtualizar) {
-        PessoaDTO pessoaSalvar = service.atualizar(id, pessoaParaAtualizar);
-        return ResponseEntity.ok(pessoaSalvar);
-    }
-
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletarPorId(id);
