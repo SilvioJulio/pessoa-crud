@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,10 +38,4 @@ public class Pessoa {
     private List<Endereco> enderecos = new ArrayList<>();
 
 
-    public Integer getIdade() {
-        if (this.dataNascimento != null) {
-            return Period.between(this.dataNascimento, LocalDate.now()).getYears();
-        }
-        return null;
-    }
 }

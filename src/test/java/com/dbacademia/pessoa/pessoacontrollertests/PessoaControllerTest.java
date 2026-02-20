@@ -58,27 +58,24 @@ public class PessoaControllerTest {
 
     @Test
     void deveCriarPessoaComSucesso() throws Exception {
-        // 1. Crie um endereço válido para passar na validação
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
                 "Rua Teste", 123, "Bairro", "Cidade", "ST", "12345678", true
         );
 
-        // 2. O QUE ENTRA: Agora com a lista contendo o endereço
         PessoaRequestDTO enviado = new PessoaRequestDTO(
                 "Julio",
                 "12345678901",
                 LocalDate.of(1990, 5, 7),
-                List.of(endereco) // <--- Não pode ser vazia!
+                List.of(endereco) 
         );
 
-        // 3. O QUE SAI: O Response (ajuste a lista aqui também se necessário)
         PessoaResponseDTO retornado = new PessoaResponseDTO(
                 1L,
                 "Julio",
                 "12345678901",
                 LocalDate.of(1990, 5, 7),
                 35,
-                new ArrayList<>() // Aqui no retorno pode ser vazia no Mock se seu DTO permitir
+                new ArrayList<>()
         );
 
         when(service.criarPessoa(any(PessoaRequestDTO.class))).thenReturn(retornado);
@@ -136,12 +133,12 @@ public class PessoaControllerTest {
     @Test
     @DisplayName("Deve atualizar pessoa e retornar 200")
     void deveAtualizarPessoa() throws Exception {
-        // 1. Crie um endereço para satisfazer a validação @NotEmpty/@NotNull
+
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
                 "Rua Teste", 123, "Bairro", "Cidade", "ST", "12345678", true
         );
 
-        // 2. Adicione o endereço na lista do Request
+
         PessoaRequestDTO atualizado = new PessoaRequestDTO(
                 "Julio Updated",
                 "12345678901",
@@ -155,7 +152,7 @@ public class PessoaControllerTest {
                 "12345678901",
                 dataNasc,
                 35,
-                new ArrayList<>() // No Response o Mock aceita vazio sem problemas
+                new ArrayList<>()
         );
 
         when(service.atualizarPessoa(eq(1L), any(PessoaRequestDTO.class))).thenReturn(pessoaResponseDTO);

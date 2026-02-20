@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ErrorResponse> handleBusinessRule(BusinessRuleException ex, HttpServletRequest request) {
 
-        // Lógica para definir 404 se o ID não for encontrado, senão 400
+
         int statusValue = ex.getMessage().contains("ID não encontrado") ? 404 : 400;
 
         List<ErrorResponse.FieldErrorItem> details = List.of(
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
         ErrorResponse body = ErrorResponse.of(
                 "BusinessRuleViolation",
                 ex.getMessage(),
-                statusValue, // Usa o status dinâmico (400 ou 404)
+                statusValue,
                 request.getRequestURI(),
                 details
         );

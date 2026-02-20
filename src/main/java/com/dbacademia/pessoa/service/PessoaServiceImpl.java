@@ -6,7 +6,6 @@ import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.exception.BusinessRuleException;
 import com.dbacademia.pessoa.mapper.PessoaMapper;
 import com.dbacademia.pessoa.repository.PessoaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,30 +17,30 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional
 public class PessoaServiceImpl implements PessoaService {
 
-    @Autowired
-    private PessoaRepository repository;
+    private final PessoaRepository repository;
+    private final PessoaMapper pessoaMapper;
 
-    @Autowired
-    private PessoaMapper pessoaMapper;
+    public PessoaServiceImpl(PessoaRepository repository, PessoaMapper pessoaMapper) {
+        this.repository = repository;
+        this.pessoaMapper = pessoaMapper;
+    }
 
     @Override
     public PessoaResponseDTO criarPessoa(PessoaRequestDTO dto) {
-        // Validação de unicidade no POST
         if (repository.existsByCpf(dto.cpf())) {
             throw new BusinessRuleException("CPF já cadastrado", "cpf");
         }
-
         Pessoa pessoa = pessoaMapper.toEntity(dto);
         Pessoa savedPessoa = repository.save(pessoa);
         return pessoaMapper.toResponseDTO(savedPessoa);
     }
+
 
     @Override
     public PessoaResponseDTO atualizarPessoa(Long id, PessoaRequestDTO dto) {
         Pessoa pessoaExistente = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada"));
 
-        // Regra: CPF é IMUTÁVEL. Se o DTO trouxer um CPF diferente do banco, bloqueia.
         if (!pessoaExistente.getCpf().equals(dto.cpf())) {
             throw new BusinessRuleException("Não é permitido alterar o CPF de uma pessoa cadastrada", "cpf");
         }

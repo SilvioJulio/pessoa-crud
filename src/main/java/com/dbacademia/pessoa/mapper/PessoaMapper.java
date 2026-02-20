@@ -20,28 +20,23 @@ import java.util.stream.Collectors;
 })
 public interface PessoaMapper {
 
-    // TO RESPONSE DTO: Calcula idade usando as classes importadas acima
     @Mapping(target = "idade", expression = "java(pessoa.getDataNascimento() != null ? Period.between(pessoa.getDataNascimento(), LocalDate.now()).getYears() : null)")
     PessoaResponseDTO toResponseDTO(Pessoa pessoa);
 
-    // TO ENTITY: Entrada do cliente para criação
     @Mapping(target = "cpf", expression = "java(pessoaRequestDTO.cpf() != null ? pessoaRequestDTO.cpf().trim() : null)")
     Pessoa toEntity(PessoaRequestDTO pessoaRequestDTO);
 
-    // UPDATE: Atualização parcial (Ignora ID e CPF por segurança)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "cpf", ignore = true)
     @Mapping(target = "enderecos", expression = "java(updateEnderecos(dto.enderecos(), target))")
     void copyUpdatableFields(PessoaRequestDTO dto, @MappingTarget Pessoa target);
 
-    // Mapeamento de Endereços
     EnderecoResponseDTO toEnderecoResponseDTO(Endereco endereco);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "pessoa", ignore = true)
     Endereco toEnderecoEntity(EnderecoRequestDTO enderecoRequestDTO);
 
-    // Lógica de atualização da lista de endereços
     default List<Endereco> updateEnderecos(List<EnderecoRequestDTO> dtos, Pessoa target) {
         if (target.getEnderecos() != null) {
             target.getEnderecos().clear();

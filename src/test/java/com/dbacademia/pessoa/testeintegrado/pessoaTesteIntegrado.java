@@ -4,9 +4,7 @@ package com.dbacademia.pessoa.testeintegrado;
 import com.dbacademia.pessoa.dtos.endereco.EnderecoRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaResponseDTO;
-import com.dbacademia.pessoa.entity.Pessoa;
 import com.dbacademia.pessoa.repository.PessoaRepository;
-import com.dbacademia.pessoa.util.PessoaCreator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +38,6 @@ public class pessoaTesteIntegrado {
         pessoaRepository.deleteAll();
     }
 
-    // Criar um Endereço padrão para satisfazer a validação @NotEmpty
     private List<EnderecoRequestDTO> criarEnderecoRequest() {
         return List.of(new EnderecoRequestDTO(
                 "Rua Teste", 123, "Bairro", "Cidade", "SP", "01001000", true
@@ -53,7 +49,7 @@ public class pessoaTesteIntegrado {
                 nome,
                 cpf,
                 LocalDate.of(2003, 5, 11),
-                criarEnderecoRequest() // Agora envia com endereço
+                criarEnderecoRequest()
         );
     }
 
@@ -101,7 +97,7 @@ public class pessoaTesteIntegrado {
                 "Nome Atualizado",
                 cpfOriginal, // CPF imutável
                 LocalDate.of(2003, 5, 11),
-                criarEnderecoRequest() // Reutiliza endereço para validar
+                criarEnderecoRequest()
         );
 
         HttpEntity<PessoaRequestDTO> requestEntity = new HttpEntity<>(dadosAtualizacao);
