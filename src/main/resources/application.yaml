@@ -1,38 +1,28 @@
- spring:
-        h2:
-          console:
-            enabled: true
-            path: /h2-console
-        datasource:
-          url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
-          driver-class-name: org.h2.Driver
-          username: ${DB_USERNAME:}
-          password: ${DB_PASSWORD:}
-        jpa:
-          hibernate:
-            ddl-auto: update
-          show-sql: true
-          database-platform: org.hibernate.dialect.H2Dialect
 
-          springdoc:
-            swagger-ui:
-              # Caminho para acessar a interface visual
-              path: /swagger-ui.html
-              # Ordena os endpoints por método (GET, POST, etc)
-              operations-sorter: method
-              # Mantém as seções de tags expandidas por padrão
-              doc-expansion: list
-            api-docs:
-              # Caminho para o JSON bruto da especificação
-              path: /api-docs
-            show-actuator: true # Opcional: mostra os endpoints do Actuator no Swagger
+server:
+  port: 8081
 
-          spring:
-            datasource:
-              url: jdbc:h2:mem:test_integration_db;DB_CLOSE_DELAY=-1
-              driver-class-name: org.h2.Driver
-            jpa:
-              hibernate:
-                ddl-auto: create-drop
-              show-sql: true
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    doc-expansion: list
+  api-docs:
+    path: /api-docs
+  show-actuator: true

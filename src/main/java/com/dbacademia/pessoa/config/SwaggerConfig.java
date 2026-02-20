@@ -14,7 +14,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("API de Gerenciamento de Pessoas")
-                        .version("1.0")
+                        .version("2.0")
                         .description("Sistema para cadastro e consulta de pessoas - DB Academia")
                         .contact(new Contact()
                                 .name("Suporte")

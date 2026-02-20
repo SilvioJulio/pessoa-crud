@@ -60,6 +60,11 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -73,32 +78,31 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>${java.version}</release>
                     <annotationProcessorPaths>
+                        <!-- 1. LOMBOK (Deve vir primeiro) -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <!-- Pega a versão automática do Parent (compatível com Java 21) -->
                             <version>${lombok.version}</version>
                         </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
 
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Substitua pelo caminho real da sua classe principal -->
-                    <mainClass>com.dbacademia.pessoa.PessoaApplication</mainClass>
-                    <excludes>
-                        <exclude>
+                        <!-- 2. BINDING (Faz o Lombok e MapStruct trabalharem juntos) -->
+                        <path>
                             <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </path>
+
+                        <!-- 3. MAPSTRUCT PROCESSOR (Gera a classe PessoaMapperImpl) -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.5.5.Final</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
