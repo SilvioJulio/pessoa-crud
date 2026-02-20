@@ -1,8 +1,6 @@
-package com.dbacademia.pessoa.dtos;
+package com.dbacademia.pessoa.dtos.endereco;
 
-import java.util.List;
-
-public record EnderecoDTO(
+public record EnderecoResponseDTO(
         Long id,
         String rua,
         Integer numero,

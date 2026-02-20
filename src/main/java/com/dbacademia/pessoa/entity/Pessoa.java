@@ -23,20 +23,16 @@ public class Pessoa {
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
 
-    @NotBlank(message = "O nome é obrigatório")
     @Column(nullable = false)
     private String nome;
 
-    @NotBlank(message = "O CPF é obrigatório")
     @Pattern(regexp = "\\d{11}", message = "O CPF deve conter exatamente 11 dígitos numéricos")
     @Column(nullable = false, unique = true)
     private String cpf;
 
-    @NotNull(message = "A data de nascimento é obrigatória")
     @Column(name = "data_nascimento", nullable = false)
     @JsonFormat(pattern = "dd/MM/yyyy") // padronize com barra
     private LocalDate dataNascimento;
-
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

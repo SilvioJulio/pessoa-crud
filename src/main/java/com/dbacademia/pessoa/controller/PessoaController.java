@@ -1,60 +1,62 @@
 package com.dbacademia.pessoa.controller;
 
 
-import com.dbacademia.pessoa.dtos.PessoaDTO;
-import com.dbacademia.pessoa.mapper.PessoaMapper;
+import com.dbacademia.pessoa.dtos.pessoa.PessoaRequestDTO;
+import com.dbacademia.pessoa.dtos.pessoa.PessoaResponseDTO;
 import com.dbacademia.pessoa.service.PessoaService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
-@RequestMapping(value = "/pessoas", produces = "application/json") // Adicionado produces
+@RequestMapping(value = "/pessoas", produces = "application/json")
 public class PessoaController {
 
-    @Autowired
-    private PessoaService service;
+    private final PessoaService service;
+
+    public PessoaController(PessoaService service) {
+        this.service = service;
+    }
 
     @PostMapping
-    public ResponseEntity<PessoaDTO> criar(@Validated(PessoaDTO.OnCreate.class) @RequestBody PessoaDTO dto) {
-        var entity = PessoaMapper.toEntity(dto); // aqui CPF é aceito
-        var resp = service.criar(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+    // Use @Valid ou especifique o grupo OnCreate se ele existir no PessoaRequestDTO
+    public ResponseEntity<PessoaResponseDTO> criar(@Valid @RequestBody PessoaRequestDTO dto) {
+        PessoaResponseDTO pessoaCriada = service.criarPessoa(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaCriada);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PessoaDTO> atualizar(
+    public ResponseEntity<PessoaResponseDTO> atualizar(
             @PathVariable Long id,
-            @Validated(PessoaDTO.OnUpdate.class) @RequestBody PessoaDTO dto ) {
-        var entity = PessoaMapper.toEntity(dto); // aqui CPF é aceito
-        var resp = service.atualizar(id, entity);
-        return ResponseEntity.ok(resp);
+            @Valid @RequestBody PessoaRequestDTO dto) {
+        PessoaResponseDTO pessoaAtualizada = service.atualizarPessoa(id, dto);
+        return ResponseEntity.ok(pessoaAtualizada);
     }
-
 
     @GetMapping
     @Operation(summary = "Listar pessoas")
-    public ResponseEntity<Page<PessoaDTO>> listar(@ParameterObject Pageable pageable) {
-        Page<PessoaDTO> paginaDTO = service.listarTodos(pageable);
-        return ResponseEntity.ok(paginaDTO);
+    public ResponseEntity<Page<PessoaResponseDTO>> listar(@ParameterObject Pageable pageable) {
+        // O retorno da service agora é Page<PessoaResponseDTO>
+        Page<PessoaResponseDTO> pessoas = service.listarPessoas(pageable);
+        return ResponseEntity.ok(pessoas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PessoaDTO> buscar(@PathVariable Long id) {
-        PessoaDTO dto = service.buscarPorId(id); // Alterado de PessoaDTO para dto
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<PessoaResponseDTO> buscar(@PathVariable Long id) {
+        // O tipo deve ser PessoaResponseDTO
+        PessoaResponseDTO pessoa = service.buscarPessoaPorId(id);
+        return ResponseEntity.ok(pessoa);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        service.deletarPorId(id);
+        service.excluirPessoaPorId(id);
         return ResponseEntity.noContent().build();
     }
 }
+

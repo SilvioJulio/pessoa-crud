@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table (name = "endereco")
+@Table (name = "tb_endereco")
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,27 +17,21 @@ public class Endereco {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "rua é obrigatória")
     @Column(nullable = false)
     private String rua;
 
-    @NotNull(message = "O número  é obrigatória")
     @Column(nullable = false)
     private Integer numero;
 
-    @NotBlank(message = "Bairro é obrigatória")
     @Column(nullable = false)
     private String bairro;
 
-    @NotBlank(message = "Cidade é obrigatória")
     @Column(nullable = false)
     private String cidade;
 
-    @NotBlank(message = "Estado  é obrigatória")
     @Column(nullable = false)
     private String estado;
 
-    @NotBlank(message = "O campo cep é obrigatória")
     @Column(nullable = false)
     private String cep;
 
