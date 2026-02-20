@@ -68,7 +68,7 @@ public class PessoaServiceImpl implements PessoaService {
     @Override
     public void excluirPessoaPorId(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID não encontrado");
         }
         repository.deleteById(id);
     }

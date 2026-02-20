@@ -1,6 +1,7 @@
 package com.dbacademia.pessoa.pessoacontrollertests;
 
 import com.dbacademia.pessoa.controller.PessoaController;
+import com.dbacademia.pessoa.dtos.endereco.EnderecoRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaResponseDTO;
 import com.dbacademia.pessoa.service.PessoaService;
@@ -57,37 +58,41 @@ public class PessoaControllerTest {
 
     @Test
     void deveCriarPessoaComSucesso() throws Exception {
-        // 1. O QUE ENTRA: O cliente envia um Request (sem ID, sem Idade)
+        // 1. Crie um endereço válido para passar na validação
+        EnderecoRequestDTO endereco = new EnderecoRequestDTO(
+                "Rua Teste", 123, "Bairro", "Cidade", "ST", "12345678", true
+        );
+
+        // 2. O QUE ENTRA: Agora com a lista contendo o endereço
         PessoaRequestDTO enviado = new PessoaRequestDTO(
                 "Julio",
                 "12345678901",
                 LocalDate.of(1990, 5, 7),
-                new ArrayList<>()
+                List.of(endereco) // <--- Não pode ser vazia!
         );
 
-        // 2. O QUE SAI: O Service devolve um Response (com ID 1 e Idade 35)
+        // 3. O QUE SAI: O Response (ajuste a lista aqui também se necessário)
         PessoaResponseDTO retornado = new PessoaResponseDTO(
                 1L,
                 "Julio",
                 "12345678901",
                 LocalDate.of(1990, 5, 7),
                 35,
-                new ArrayList<>()
+                new ArrayList<>() // Aqui no retorno pode ser vazia no Mock se seu DTO permitir
         );
 
-        // 3. MOCK: Quando o service receber QUALQUER Request, retorne o Response
         when(service.criarPessoa(any(PessoaRequestDTO.class))).thenReturn(retornado);
 
         mockMvc.perform(post("/pessoas")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(enviado))) // Enviando o Request
+                        .content(objectMapper.writeValueAsString(enviado)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))   // Validando ID do Response
-                .andExpect(jsonPath("$.idade").value(35)); // Validando Idade do Response
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.idade").value(35));
     }
 
 
-   @Test
+    @Test
     @DisplayName("Deve listar pessoas e retornar 200")
     void deveListarPessoas() throws Exception {
 
@@ -131,11 +136,17 @@ public class PessoaControllerTest {
     @Test
     @DisplayName("Deve atualizar pessoa e retornar 200")
     void deveAtualizarPessoa() throws Exception {
+        // 1. Crie um endereço para satisfazer a validação @NotEmpty/@NotNull
+        EnderecoRequestDTO endereco = new EnderecoRequestDTO(
+                "Rua Teste", 123, "Bairro", "Cidade", "ST", "12345678", true
+        );
+
+        // 2. Adicione o endereço na lista do Request
         PessoaRequestDTO atualizado = new PessoaRequestDTO(
                 "Julio Updated",
                 "12345678901",
                 dataNasc,
-                new ArrayList<>()
+                List.of(endereco) // <--- Não pode ser vazio
         );
 
         PessoaResponseDTO pessoaResponseDTO = new PessoaResponseDTO(
@@ -144,7 +155,7 @@ public class PessoaControllerTest {
                 "12345678901",
                 dataNasc,
                 35,
-                new ArrayList<>()
+                new ArrayList<>() // No Response o Mock aceita vazio sem problemas
         );
 
         when(service.atualizarPessoa(eq(1L), any(PessoaRequestDTO.class))).thenReturn(pessoaResponseDTO);
@@ -156,8 +167,8 @@ public class PessoaControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.nome").value("Julio Updated"))
                 .andExpect(jsonPath("$.idade").value(35));
-
     }
+
 
 
 

@@ -1,6 +1,7 @@
 package com.dbacademia.pessoa.testeintegrado;
 
 
+import com.dbacademia.pessoa.dtos.endereco.EnderecoRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaRequestDTO;
 import com.dbacademia.pessoa.dtos.pessoa.PessoaResponseDTO;
 import com.dbacademia.pessoa.entity.Pessoa;
@@ -22,9 +23,10 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // RANDOM_PORT é mais seguro que DEFINED
+
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class pessoaTesteIntegrado {
 
@@ -39,20 +41,25 @@ public class pessoaTesteIntegrado {
         pessoaRepository.deleteAll();
     }
 
-    // Criar um RequestDTO pronto para envio
+    // Criar um Endereço padrão para satisfazer a validação @NotEmpty
+    private List<EnderecoRequestDTO> criarEnderecoRequest() {
+        return List.of(new EnderecoRequestDTO(
+                "Rua Teste", 123, "Bairro", "Cidade", "SP", "01001000", true
+        ));
+    }
+
     private PessoaRequestDTO criarPessoaRequest(String nome, String cpf) {
-        return PessoaCreator.createPessoaRequestDTO(
+        return new PessoaRequestDTO(
                 nome,
                 cpf,
                 LocalDate.of(2003, 5, 11),
-                new ArrayList<>()
+                criarEnderecoRequest() // Agora envia com endereço
         );
     }
 
     @Test
     void deveCriarPessoaComSucesso() {
         PessoaRequestDTO request = criarPessoaRequest("Luiz Felipe", "01852416033");
-
         ResponseEntity<PessoaResponseDTO> response = restTemplate.postForEntity("/pessoas", request, PessoaResponseDTO.class);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -63,12 +70,9 @@ public class pessoaTesteIntegrado {
     @Test
     void deveBuscarPessoaPorIdComSucesso() {
         PessoaRequestDTO request = criarPessoaRequest("Busca Por Id", "12345678901");
-
-        // Primeiro salva
         ResponseEntity<PessoaResponseDTO> postResponse = restTemplate.postForEntity("/pessoas", request, PessoaResponseDTO.class);
         Long pessoaId = postResponse.getBody().id();
 
-        // Depois busca
         ResponseEntity<PessoaResponseDTO> getResponse = restTemplate.getForEntity("/pessoas/" + pessoaId, PessoaResponseDTO.class);
 
         assertEquals(HttpStatus.OK, getResponse.getStatusCode());
@@ -91,15 +95,13 @@ public class pessoaTesteIntegrado {
         String cpfOriginal = "01852416033";
         PessoaRequestDTO requestInicial = criarPessoaRequest("Nome Original", cpfOriginal);
         ResponseEntity<PessoaResponseDTO> postResponse = restTemplate.postForEntity("/pessoas", requestInicial, PessoaResponseDTO.class);
-
         Long pessoaId = postResponse.getBody().id();
 
-        // O Request de atualização DEVE ter o mesmo CPF (regra de imutabilidade)
         PessoaRequestDTO dadosAtualizacao = new PessoaRequestDTO(
                 "Nome Atualizado",
-                cpfOriginal,
+                cpfOriginal, // CPF imutável
                 LocalDate.of(2003, 5, 11),
-                new ArrayList<>()
+                criarEnderecoRequest() // Reutiliza endereço para validar
         );
 
         HttpEntity<PessoaRequestDTO> requestEntity = new HttpEntity<>(dadosAtualizacao);
@@ -120,7 +122,6 @@ public class pessoaTesteIntegrado {
         restTemplate.delete("/pessoas/" + pessoaId);
 
         ResponseEntity<PessoaResponseDTO> getResponse = restTemplate.getForEntity("/pessoas/" + pessoaId, PessoaResponseDTO.class);
-
         assertEquals(HttpStatus.NOT_FOUND, getResponse.getStatusCode());
     }
 
@@ -130,7 +131,7 @@ public class pessoaTesteIntegrado {
         int idadeEsperada = Period.between(dataNascimento, LocalDate.now()).getYears();
 
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Calculo Idade", "55566677788", dataNascimento, new ArrayList<>()
+                "Calculo Idade", "55566677788", dataNascimento, criarEnderecoRequest()
         );
 
         ResponseEntity<PessoaResponseDTO> response = restTemplate.postForEntity("/pessoas", request, PessoaResponseDTO.class);
@@ -148,7 +149,7 @@ public class pessoaTesteIntegrado {
     @Test
     void deveRetornar404AoAtualizarPessoaInexistente() {
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Nome Inexistente", "00000000000", LocalDate.of(2000, 1, 1), new ArrayList<>()
+                "Nome Inexistente", "00000000000", LocalDate.of(2000, 1, 1), criarEnderecoRequest()
         );
 
         HttpEntity<PessoaRequestDTO> requestEntity = new HttpEntity<>(request);
@@ -161,10 +162,8 @@ public class pessoaTesteIntegrado {
 
     @Test
     void deveRetornarErroFormatadoAoDeletarIdInexistente() {
-        Long idInexistente = 11L;
-
         ResponseEntity<Map> response = restTemplate.exchange(
-                "/pessoas/" + idInexistente, HttpMethod.DELETE, null, Map.class
+                "/pessoas/11", HttpMethod.DELETE, null, Map.class
         );
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
